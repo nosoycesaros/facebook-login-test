@@ -17,25 +17,30 @@ module.exports = function(app, passport, FB) {
 
       FB.setAccessToken(req.user.facebook.token);
 
-      FB.api('/me', function (res) {
-        if(!res || res.error) {
-         console.log(!res ? 'error occurred' : res.error);
-         return;
-        }
-        console.log(res.id);
-        console.log(res.name);
-      });
+      FB.api(
+          "/" + req.user.facebook.id + "/accounts",
+          function (response) {
+            if (response && !response.error) {
+              /* handle the result */
 
-        res.render('profile.ejs', {
-            user : req.user // get the user out of session and pass to template
-        });
+              console.log(response);
+
+              res.render('profile.ejs', {
+                  user : req.user, // get the user out of session and pass to template
+                  pages : response
+              });
+            }
+          }
+      );
+
+
     });
 
     // =====================================
     // FACEBOOK ROUTES =====================
     // =====================================
     // route for facebook authentication and login
-    app.get('/auth/facebook', passport.authenticate('facebook', { scope : ['public_profile', 'email'] }));
+    app.get('/auth/facebook', passport.authenticate('facebook', { scope : ['public_profile', 'email', "manage_pages"] }));
 
     // handle the callback after facebook has authenticated the user
     app.get('/auth/facebook/callback',
